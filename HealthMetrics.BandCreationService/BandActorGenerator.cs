@@ -16,7 +16,8 @@ namespace HealthMetrics.BandCreationService
 
     public class BandActorGenerator
     {
-        private static CryptoRandom r = new CryptoRandom();
+        /// Represents a pseudo-random number generator, a device that produces random data.
+        private static CryptoRandom r = new CryptoRandom();  
         public Dictionary<CountyRecord, List<Guid>> doctorsPerCounty = new Dictionary<CountyRecord, List<Guid>>();
         private List<string> peopleNames = new List<string>();
         private string pathToCountyFile = null;
@@ -58,6 +59,7 @@ namespace HealthMetrics.BandCreationService
             return b;
         }
 
+        // Read data from csv file to doctorsPerCounty field
         private Task BuildCountyInfo()
         {
             StreamReader countyReader = new StreamReader(File.OpenRead(this.pathToCountyFile));
@@ -66,7 +68,7 @@ namespace HealthMetrics.BandCreationService
             {
                 List<Guid> doctorList = new List<Guid>();
 
-                string line = countyReader.ReadLine();
+                string line = countyReader.ReadLine(); // each row is one county
                 string[] values = line.Split(',');
                 int population = int.Parse(values[3]);
                 double healthBonus = double.Parse(values[4]);
@@ -86,6 +88,7 @@ namespace HealthMetrics.BandCreationService
             return Task.FromResult(true);
         }
 
+        // Read data from csv file to peopleNames field
         private Task BuildPeopleNames()
         {
             StreamReader nameReader = new StreamReader(File.OpenRead(this.pathToNamesFile));

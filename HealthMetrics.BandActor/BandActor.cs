@@ -85,6 +85,7 @@ namespace HealthMetrics.BandActor
             ActorEventSource.Current.ActorMessage(this, "Band created. ID: {0}, Name: {1}, Doctor ID: {2}", this.Id, info.PersonName, info.DoctorId);
         }
 
+        // This ReceiveReminderAsync method will be called by service fabric runtime when the reminder is triggered
         async Task IRemindable.ReceiveReminderAsync(string reminderName, byte[] context, TimeSpan dueTime, TimeSpan period)
         {
             switch (reminderName)
@@ -177,6 +178,7 @@ namespace HealthMetrics.BandActor
             return;
         }
 
+        // register a reminder for this actor service
         private async Task RegisterReminders()
         {
             await this.RegisterReminderAsync(GenerateAndSendHealthReportReminder, null, TimeSpan.FromSeconds(this.random.Next(5, 15)), TimeSpan.FromSeconds(5));

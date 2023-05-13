@@ -51,11 +51,12 @@ namespace HealthMetrics.BandCreationService
             ConfigurationSettings configSettings = FabricRuntime.GetActivationContext().GetConfigurationPackageObject("Config").Settings;
             KeyedCollection<string, ConfigurationProperty> serviceParameters = configSettings.Sections["HealthMetrics.BandCreationService.Settings"].Parameters;
 
-            this.NumberOfCreationThreads = int.Parse(serviceParameters["NumberOfCreationThreads"].Value);
-            this.MaxBandsToCreatePerServiceInstance = int.Parse(serviceParameters["MaxBandsToCreatePerServiceInstance"].Value);
+            this.NumberOfCreationThreads = int.Parse(serviceParameters["NumberOfCreationThreads"].Value); // 4
+            this.MaxBandsToCreatePerServiceInstance = int.Parse(serviceParameters["MaxBandsToCreatePerServiceInstance"].Value); // 4000
+            ///  the uri is this format: fabric:/applicationName/serviceName
             this.ActorServiceUri = new ServiceUriBuilder(serviceParameters["BandActorServiceName"].Value).ToUri();
             this.DoctorServiceUri = new ServiceUriBuilder(serviceParameters["DoctorActorServiceName"].Value).ToUri();
-            this.GenerateKnownPeople = bool.Parse(serviceParameters["GenerateKnownPeople"].Value);
+            this.GenerateKnownPeople = bool.Parse(serviceParameters["GenerateKnownPeople"].Value); // false
 
             string dataPath = FabricRuntime.GetActivationContext().GetDataPackageObject("Data").Path;
             BandActorGenerator bag = new BandActorGenerator(configSettings, dataPath);
