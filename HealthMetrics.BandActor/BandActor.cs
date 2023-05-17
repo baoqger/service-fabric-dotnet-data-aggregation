@@ -73,13 +73,15 @@ namespace HealthMetrics.BandActor
             throw new ArgumentException(string.Format("No band actor state {0}|{1}", this.Id, this.Id.Kind));
         }
 
+        // set state for BandActor
+        // BandInfo variable is passed from BandCreationService
         public async Task NewAsync(BandInfo info)
         {
             await this.StateManager.SetStateAsync<CountyRecord>("CountyInfo", info.CountyInfo);
             await this.StateManager.SetStateAsync<Guid>("DoctorId", info.DoctorId);
             await this.StateManager.SetStateAsync<HealthIndex>("HealthIndex", info.HealthIndex);
             await this.StateManager.SetStateAsync<string>("PatientName", info.PersonName);
-            await this.StateManager.SetStateAsync<List<HeartRateRecord>>("HeartRateRecords", new List<HeartRateRecord>());
+            await this.StateManager.SetStateAsync<List<HeartRateRecord>>("HeartRateRecords", new List<HeartRateRecord>()); // initially the heart rate records are empty list
             await this.RegisterReminders();
 
             ActorEventSource.Current.ActorMessage(this, "Band created. ID: {0}, Name: {1}, Doctor ID: {2}", this.Id, info.PersonName, info.DoctorId);
@@ -126,12 +128,13 @@ namespace HealthMetrics.BandActor
                 if (HeatlthInfoResult.HasValue && PatientInfoResult.HasValue && DoctorInfoResult.HasValue)
                 {
                     ActorId doctorId = new ActorId(DoctorInfoResult.Value);
-                    HeartRateRecord record = new HeartRateRecord((float) this.random.NextDouble());
+                    HeartRateRecord record = new HeartRateRecord((float) this.random.NextDouble()); // generate a heart rate record
 
                     await this.SaveHealthDataAsync(record);
 
                     IDoctorActor doctor = ActorProxy.Create<IDoctorActor>(doctorId, this.doctorActorServiceUri);
 
+                    // the health report seems doesn't contain any changing data
                     await
                         doctor.ReportHealthAsync(
                             this.Id.GetGuidId(),
@@ -163,6 +166,7 @@ namespace HealthMetrics.BandActor
             this.UpdateConfigSettings(e.NewPackage.Settings);
         }
 
+        // update the heart rate record state
         private async Task SaveHealthDataAsync(HeartRateRecord newRecord)
         {
             ConditionalValue<List<HeartRateRecord>> HeartRateRecords = await this.StateManager.TryGetStateAsync<List<HeartRateRecord>>("HeartRateRecords");
@@ -170,6 +174,7 @@ namespace HealthMetrics.BandActor
             if (HeartRateRecords.HasValue)
             {
                 List<HeartRateRecord> records = HeartRateRecords.Value;
+                // keep lastest record within the time window
                 records = records.Where(x => DateTimeOffset.UtcNow - x.Timestamp.ToUniversalTime() <= this.TimeWindow).ToList();
                 records.Add(newRecord);
                 await this.StateManager.SetStateAsync<List<HeartRateRecord>>("HeartRateRecords", records);

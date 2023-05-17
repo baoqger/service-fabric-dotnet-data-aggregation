@@ -54,6 +54,8 @@ namespace HealthMetrics.DoctorActor
             ActorEventSource.Current.ActorMessage(this, "Doctor created. ID: {0}. Name: {1}", this.Id.GetGuidId(), name);
         }
 
+        // this method is called from BandActor for sending health report
+        // each doctor can contains health reports of multiple bands
         public async Task ReportHealthAsync(Guid personId, string personName, HealthIndex healthIndex)
         {
             ConditionalValue<Dictionary<Guid, DoctorPatientState>> patientReportResult =
@@ -63,7 +65,7 @@ namespace HealthMetrics.DoctorActor
 
             if (patientReportResult.HasValue)
             {
-                patientReportResult.Value[personId] = new DoctorPatientState(personId, personName, healthIndex);
+                patientReportResult.Value[personId] = new DoctorPatientState(personId, personName, healthIndex); // update the state for the specific patient
 
                 await this.StateManager.SetStateAsync<Dictionary<Guid, DoctorPatientState>>("PersonHealthStatuses", patientReportResult.Value);
                 await this.StateManager.SetStateAsync<long>("HealthReportCount", healthReportCountResult.Value + 1);
@@ -156,6 +158,7 @@ namespace HealthMetrics.DoctorActor
             return;
         }
 
+        // send health report to county service
         public async Task SendHealthReportToCountyAsync()
         {
             try
@@ -173,10 +176,11 @@ namespace HealthMetrics.DoctorActor
                     if (healthReportCount > 0)
                     {
                         DoctorStatsViewModel payload = new DoctorStatsViewModel(
-                            patientHealthReports.Count,
-                            healthReportCount,
-                            await this.GetAveragePatientHealthInfoAsync(),
-                            name);
+                            patientHealthReports.Count, // patient count
+                            healthReportCount, // health report count
+                            await this.GetAveragePatientHealthInfoAsync(), // averagehealthindex
+                            name // doctor name
+                           );
 
                         ServicePartitionKey partitionKey = new ServicePartitionKey(countyRecord.CountyId);
                         Guid id = this.Id.GetGuidId();

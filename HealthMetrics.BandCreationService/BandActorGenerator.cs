@@ -55,7 +55,10 @@ namespace HealthMetrics.BandCreationService
             b.PersonName = this.GetRandomName(random);
             double healthDistribution = GetRandomNormalDistributedWithGivenMeanAndStdev(r, b.CountyInfo.CountyHealth, .75, 3);
             b.HealthIndex = NormalizeHealthDistribution(healthDistribution);
-            b.DoctorId = this.doctorsPerCounty[county][random.Next(0, this.doctorsPerCounty[county].Count)];
+            // the number of Doctors in each county depends on the population of the county
+            // each band is associated with on doctor by a DoctorId
+            // DoctorId is randomly generated, so possibly there may be multiple bands are associated with the same doctor
+            b.DoctorId = this.doctorsPerCounty[county][random.Next(0, this.doctorsPerCounty[county].Count)]; 
             return b;
         }
 

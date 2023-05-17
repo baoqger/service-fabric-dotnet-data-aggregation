@@ -101,12 +101,12 @@ namespace HealthMetrics.BandCreationService
                     doctorName = bag.GetRandomName(random);
 
                     CountyRecord randomCountyRecord = bag.doctorsPerCounty.Keys.ElementAt(randomCountyId);
-                    BandInfo bandActorInfo = bag.GetRandomHealthStatus(randomCountyRecord, random);
+                    BandInfo bandActorInfo = bag.GetRandomHealthStatus(randomCountyRecord, random); // each band is associated with one doctor
 
                     try
                     {
-                        bandActorId = new ActorId(Guid.NewGuid());
-                        doctorActorId = new ActorId(bandActorInfo.DoctorId);
+                        bandActorId = new ActorId(Guid.NewGuid()); // band actor id is unique
+                        doctorActorId = new ActorId(bandActorInfo.DoctorId); // the relationship between band and doctor is multiple to 1.
 
                         IDoctorActor docActor = ActorProxy.Create<IDoctorActor>(doctorActorId, this.DoctorServiceUri);
                         await docActor.NewAsync(doctorName, randomCountyRecord);
