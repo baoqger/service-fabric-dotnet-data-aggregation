@@ -105,7 +105,7 @@ namespace HealthMetrics.BandCreationService
 
                     try
                     {
-                        bandActorId = new ActorId(Guid.NewGuid()); // band actor id is unique
+                        bandActorId = new ActorId(Guid.NewGuid()); // band actor id is guid
                         doctorActorId = new ActorId(bandActorInfo.DoctorId); // the relationship between band and doctor is multiple to 1.
 
                         IDoctorActor docActor = ActorProxy.Create<IDoctorActor>(doctorActorId, this.DoctorServiceUri);

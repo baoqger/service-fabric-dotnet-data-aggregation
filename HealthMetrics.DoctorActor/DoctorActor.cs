@@ -182,6 +182,7 @@ namespace HealthMetrics.DoctorActor
                             name // doctor name
                            );
 
+                        // county service is partitioned!!!
                         ServicePartitionKey partitionKey = new ServicePartitionKey(countyRecord.CountyId);
                         Guid id = this.Id.GetGuidId();
 

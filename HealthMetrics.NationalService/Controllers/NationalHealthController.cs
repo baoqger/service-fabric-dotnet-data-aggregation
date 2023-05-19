@@ -51,9 +51,9 @@ namespace HealthMetrics.NationalService
                         status.DoctorCount,
                         status.PatientCount,
                         status.HealthReportCount,
-                        status.AverageHealthIndex));
+                        status.AverageHealthIndex)); // save the county health state
 
-                this.updatedCounties.Add(countyId);
+                this.updatedCounties.Add(countyId);  // append countyid. how to handle the duplicated countyid??
 
                 await tx.CommitAsync();
             }
@@ -92,7 +92,7 @@ namespace HealthMetrics.NationalService
                 }
 
                 int tmp = countyId;
-                this.updatedCounties.TryTake(out tmp);
+                this.updatedCounties.TryTake(out tmp); // the TryTake method will remove the element. Then there is no duplciated elements
             }
 
             return this.Ok(countyData);

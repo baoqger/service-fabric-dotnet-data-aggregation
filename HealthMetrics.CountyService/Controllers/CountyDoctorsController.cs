@@ -33,7 +33,7 @@ namespace HealthMetrics.CountyService
         /// <summary>
         /// Returns { DoctorId, DoctorName, HealthStatus }
         /// </summary>
-        /// <returns></returns>
+        /// <returns> doctor list in this county </returns>
         [HttpGet]
         [Route("county/doctors/{countyId}")]
         public async Task<IHttpActionResult> Get(int countyId)

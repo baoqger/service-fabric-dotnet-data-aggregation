@@ -82,7 +82,7 @@ namespace HealthMetrics.BandCreationService
 
                 for (int doctorCount = 0; doctorCount < totalDoctors; doctorCount++)
                 {
-                    doctorList.Add(Guid.NewGuid());
+                    doctorList.Add(Guid.NewGuid()); // doctor id is guid
                 }
 
                 this.doctorsPerCounty.Add(new CountyRecord(countyName, int.Parse(values[0]), healthBonus), doctorList);

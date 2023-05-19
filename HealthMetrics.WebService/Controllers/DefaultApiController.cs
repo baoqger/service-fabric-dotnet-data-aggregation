@@ -6,6 +6,7 @@
 namespace HealthMetrics.WebService.Controllers
 {
     using System;
+    using System.Collections.Generic;
     using System.Collections.ObjectModel;
     using System.Fabric;
     using System.Fabric.Description;
@@ -153,7 +154,6 @@ namespace HealthMetrics.WebService.Controllers
 
             FabricClient fc = new FabricClient();
             ServicePartitionList partitions = await fc.QueryManager.GetPartitionListAsync(fabricServiceName);
-
             ActorId bandActorId = null;
 
             try
@@ -162,7 +162,7 @@ namespace HealthMetrics.WebService.Controllers
                 {
                     foreach (Partition p in partitions)
                     {
-                        long partitionKey = ((Int64RangePartitionInformation) p.PartitionInformation).LowKey;
+                        long partitionKey = ((Int64RangePartitionInformation)p.PartitionInformation).LowKey;
                         token.ThrowIfCancellationRequested();
                         ContinuationToken queryContinuationToken = null;
                         IActorService proxy = ActorServiceProxy.Create(fabricServiceName, partitionKey);
@@ -186,6 +186,46 @@ namespace HealthMetrics.WebService.Controllers
                 //no actors found within timeout
                 throw;
             }
+        }
+
+        [HttpGet]
+        [Route("debug/GetBandActorList")]
+        public async Task<List<ActorInformation>> GetBandActorList()
+        {
+            ServiceUriBuilder serviceUri = new ServiceUriBuilder(this.GetSetting("BandActorServiceInstanceName"));
+            Uri fabricServiceName = serviceUri.ToUri();
+
+            CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+            CancellationToken token = cts.Token;
+
+            FabricClient fc = new FabricClient();
+
+            ServicePartitionList partitions = await fc.QueryManager.GetPartitionListAsync(fabricServiceName);
+
+            try
+            {
+                List<ActorInformation> actors = new List<ActorInformation>();
+
+                foreach (Partition p in partitions)
+                {
+                    long partitionKey = ((Int64RangePartitionInformation)p.PartitionInformation).LowKey;
+                    token.ThrowIfCancellationRequested();
+                    ContinuationToken queryContinuationToken = null;
+                    IActorService proxy = ActorServiceProxy.Create(fabricServiceName, partitionKey);
+                    PagedResult<ActorInformation> result = await proxy.GetActorsAsync(queryContinuationToken, token);
+                    foreach (ActorInformation info in result.Items)
+                    {
+                        actors.Add(info);
+                    }
+                }
+                return actors;
+            }
+            catch
+            {
+                throw;
+            }
+
         }
     }
 }

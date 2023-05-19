@@ -20,7 +20,7 @@ namespace HealthMetrics.NationalService
     public class Service : StatefulService
     {
         public const string ServiceTypeName = "HealthMetrics.NationalServiceType";
-        private ConcurrentBag<int> updatedCounties = new ConcurrentBag<int>();
+        private ConcurrentBag<int> updatedCounties = new ConcurrentBag<int>(); // concurrent data structure
 
         public Service(StatefulServiceContext serviceContext) : base(serviceContext)
         {

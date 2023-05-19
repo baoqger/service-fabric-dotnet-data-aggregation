@@ -58,7 +58,7 @@ namespace HealthMetrics.CountyService
                     {
                         doctorStats.Add(enumerator.Current);
                     }
-
+                    // calculate the average health index of all the doctors in the county
                     return this.Ok(this.indexCalculator.ComputeAverageIndex(doctorStats.Select(x => x.Value.AverageHealthIndex)));
                 }
                 else
@@ -78,14 +78,17 @@ namespace HealthMetrics.CountyService
         {
             try
             {
+                // here ReliableDictionary is used
                 IReliableDictionary<int, string> countyNameDictionary =
                     await this.stateManager.GetOrAddAsync<IReliableDictionary<int, string>>(Service.CountyNameDictionaryName);
-
+                // here ReliableDictionary is used
+                // Guid is doctor id. CountyDoctorStats stores the each doctor's patients' statistic data
                 IReliableDictionary<Guid, CountyDoctorStats> countyHealth =
                     await
                         this.stateManager.GetOrAddAsync<IReliableDictionary<Guid, CountyDoctorStats>>(
                             string.Format(Service.CountyHealthDictionaryName, countyId));
-
+                
+                // ACID transaction
                 using (ITransaction tx = this.stateManager.CreateTransaction())
                 {
                     await

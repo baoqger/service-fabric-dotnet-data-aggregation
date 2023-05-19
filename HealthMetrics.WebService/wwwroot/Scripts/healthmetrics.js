@@ -22,7 +22,7 @@ function MetricsApp() {
     };
 
     this.Initialize = function () {
-
+        // there are two views: doctor and patient/user
         if (window.location.hash == "#doctors") {
             self.SetDoctorContext();
         }
@@ -32,20 +32,20 @@ function MetricsApp() {
 
         setInterval(self.UpdateStats, 3000);
     }
-
+    // initialize user information
     this.InitializeUsers = function () {
 
         api.GetIds(function (result) {
             var strings = result.split("|");
-            self.currentBandId = strings[0];
-            self.currentDoctorId = strings[1];
+            self.currentBandId = strings[0]; // get band id
+            self.currentDoctorId = strings[1]; // get doctor id
         });
 
         setInterval(self.UpdateUserInfo, 2000);
         //setInterval(self.UpdateDoctorInfo, 5000);
     }
 
-
+    // update the overall stats data every 3s
     this.UpdateStats = function () {
 
         api.GetNationalStats(function (statsData) {
@@ -91,11 +91,12 @@ function MetricsApp() {
         });
     }
 
+    // update user info
     this.UpdateUserInfo = function () {
         api.GetPatient(self.currentBandId, function (patientData) {
-            self.currentPersonName = patientData.PersonName;
+            self.currentPersonName = patientData.PersonName; // patient name
 
-            var healthBoxClass = getHealthBoxClass(patientData.HealthIndexValue);
+            var healthBoxClass = getHealthBoxClass(patientData.HealthIndexValue);// HealthIndex
             var healthBoxText = getHealthBoxTextValue(patientData.HealthIndexValue);
 
             var userHealthIndex = $('#userInfo-userHealthIndex');
@@ -106,7 +107,8 @@ function MetricsApp() {
             var heartRateTable = $('#userStats #heartRateTable');
             heartRateTable.empty();
 
-            api.GetCountyHealth(patientData.CountyInfo.CountyId, function (value) {
+            // get county data where the user is located
+            api.GetCountyHealth(patientData.CountyInfo.CountyId, function (value) { // value is HealthIndex type
 
                 var healthBoxClass = getHealthBoxClass(value);
                 var healthBoxText = getHealthBoxTextValue(value);
@@ -136,7 +138,7 @@ function MetricsApp() {
             if (self.currentContext == 'user') {
                 self.SetUserName(self.currentPersonName);
             }
-
+            // update docter list panel
             self.UpdateDoctorList(patientData.CountyInfo.CountyId);
         });
     }
@@ -174,6 +176,7 @@ function MetricsApp() {
     };
 }
 
+// the entry point of the front end script
 $(function () {
     var metricsApp = new MetricsApp();
     metricsApp.Initialize();
@@ -190,12 +193,13 @@ $(function () {
 
 });
 
+
 var mapApp = {
     initialize: function () {
         var self = this;
         var scope = angular.element(document.getElementById('map')).scope();
         this.initializeMap();
-        setInterval(scope.refreshCountyHealth, 5000);
+        setInterval(scope.refreshCountyHealth, 5000); // refresh every 5s
 
         var width = ($(window).width() * .95) - 350;
         var height = width * .66;
@@ -208,6 +212,7 @@ var mapApp = {
             .css("margin-top", Math.round((width / 10) * -1))
             .css("float", "left");
 
+        // refresh map
         $("#map").on("mapRefresh", function (e, newValue) {
             e.stopPropagation();
             e.preventDefault();

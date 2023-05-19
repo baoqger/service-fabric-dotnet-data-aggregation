@@ -71,10 +71,12 @@ namespace HealthMetrics.CountyService
 
             try
             {
+                // these states are updated via request. Please find the code in controllers
                 IReliableDictionary<int, string> countyNamesDictionary =
                     await this.StateManager.GetOrAddAsync<IReliableDictionary<int, string>>(CountyNameDictionaryName);
 
                 ServiceEventSource.Current.ServiceMessage(this, "CountyService starting data processing.");
+
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     //every ten seconds, grab the counties and send them to national
@@ -102,11 +104,11 @@ namespace HealthMetrics.CountyService
                         IReliableDictionary<Guid, CountyDoctorStats> countyHealth =
                             await
                                 this.StateManager.GetOrAddAsync<IReliableDictionary<Guid, CountyDoctorStats>>(
-                                    string.Format(CountyHealthDictionaryName, county.Key));
+                                    string.Format(CountyHealthDictionaryName, county.Key)); // get the each county's data
 
-                        int totalDoctorCount = 0;
-                        int totalPatientCount = 0;
-                        long totalHealthReportCount = 0;
+                        int totalDoctorCount = 0; // per county
+                        int totalPatientCount = 0; // per county
+                        long totalHealthReportCount = 0; // per county
                         HealthIndex avgHealth;
 
                         using (ITransaction tx = this.StateManager.CreateTransaction())
@@ -121,7 +123,8 @@ namespace HealthMetrics.CountyService
                             {
                                 records.Add(enumerator.Current);
                             }
-
+                            
+                            // average per county 
                             avgHealth = this.indexCalculator.ComputeAverageIndex(records.Select(x => x.Value.AverageHealthIndex));
 
                             foreach (KeyValuePair<Guid, CountyDoctorStats> item in records)
